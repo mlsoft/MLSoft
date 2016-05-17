@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="fragment_array_entries">
+        <item>Main</item>
+        <item>Contacts</item>
+        <item>Person</item>
+        <item>Budget</item>
+        <item>Trycorder</item>
+        <item>TrycorderAct</item>
+        <item>Iron</item>
+        <item>Settings</item>
+        <item>None</item>
+    </string-array>
+
+    <string-array name="fragment_array_entryvalues">
+        <item>Main</item>
+        <item>Contacts</item>
+        <item>Person</item>
+        <item>Budget</item>
+        <item>Trycorder</item>
+        <item>TrycorderAct</item>
+        <item>Iron</item>
+        <item>Settings</item>
+        <item>None</item>
+    </string-array>
+
+    <string-array name="listen_array_entries">
+        <item>French</item>
+        <item>English</item>
+        <item>Auto</item>
+    </string-array>
+
+    <string-array name="listen_array_entryvalues">
+        <item>FR</item>
+        <item>EN</item>
+        <item>Auto</item>
+    </string-array>
+
+    <string-array name="speak_array_entries">
+        <item>French</item>
+        <item>English</item>
+        <item>Auto</item>
+    </string-array>
+
+    <string-array name="speak_array_entryvalues">
+        <item>FR</item>
+        <item>EN</item>
+        <item>Auto</item>
+    </string-array>
+
+</resources>

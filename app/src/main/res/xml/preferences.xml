@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Module Main"
+        android:key="pref_key_main_settings">
+        <CheckBoxPreference
+            android:key="pref_key_tabbed_mode"
+            android:summary="Activates the Tabs mode"
+            android:title="Tabbed Mode"
+            android:defaultValue="false" />
+        <ListPreference
+            android:key="pref_key_display_language"
+            android:entries="@array/listen_array_entries"
+            android:entryValues="@array/listen_array_entryvalues"
+            android:summary="Language used to display to the user"
+            android:title="Display Language"
+            android:defaultValue="EN"/>
+        <ListPreference
+            android:key="pref_key_default_fragment"
+            android:entries="@array/fragment_array_entries"
+            android:entryValues="@array/fragment_array_entryvalues"
+            android:summary="Fragment to start on opening"
+            android:title="Default Fragment"
+            android:defaultValue="Contacts"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Module Contacts"
+        android:key="pref_key_contacts_settings">
+        <CheckBoxPreference
+            android:key="pref_key_starred"
+            android:summary="Determine if the list contains only starred"
+            android:title="Starred"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Module Conversation"
+        android:key="pref_key_conversation_settings">
+        <CheckBoxPreference
+            android:key="pref_key_auto_listen"
+            android:summary="Determine if the listen function is looping"
+            android:title="Automatic loop"
+            android:defaultValue="false" />
+        <ListPreference
+            android:key="pref_key_listen_language"
+            android:entries="@array/listen_array_entries"
+            android:entryValues="@array/listen_array_entryvalues"
+            android:summary="Language used to listen to the user"
+            android:title="Listen Language"
+            android:defaultValue="FR"/>
+        <ListPreference
+            android:key="pref_key_speak_language"
+            android:entries="@array/speak_array_entries"
+            android:entryValues="@array/speak_array_entryvalues"
+            android:summary="Language used to pronounce text to speak"
+            android:title="Speak Language"
+            android:defaultValue="FR"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

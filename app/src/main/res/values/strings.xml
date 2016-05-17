@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">MLSoft</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="activity_settings">Settings</string>
+
+    <string name="activity_contact_editmemo">Contact Edit Memo</string>
+    <string name="activity_contact_edittrans">Contact Edit Transaction</string>
+
+    <string name="imageview_description">Contact Thumbnail</string>
+    <string name="address_button_description">View Address</string>
+    <string name="admin_addbutton_description">Add Transaction</string>
+    <string name="notes_button_description">Edit Notes</string>
+    <string name="phone_button_description">Edit Phone</string>
+    <string name="email_button_description">Edit Email</string>
+    <string name="transaction_button_description">Edit Transaction</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_add_contact">Add Contact</string>
+    <string name="menu_modif_contact">Modify Contact</string>
+    <string name="menu_starred">Starred Contact</string>
+    <string name="no_contacts">No Contacts Found</string>
+
+    <!-- Used for the AlphabetIndexer in ContactsListFragment to provide quick navigation by
+         alphabet using ListView fast scroll. -->
+    <string name="alphabet">ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
+
+    <!-- When using ContactsContract.Contacts#CONTENT_FILTER_URI to search contacts, a match occurs
+         when using a number of different fields, such as name, e-mail address, address, phone
+         number, etc. When a match occurs that is not the name, there is currently no way to tell
+         which other field was matched. This string is displayed in the secondary display text in
+         ContactsListFragment when a search query match occurs that is not the display name.
+         -->
+    <string name="search_match_other">Matches Other Field</string>
+
+    <string name="no_address">No addresses found</string>
+    <string name="no_intent_found">No application found to handle this action!</string>
+
+    <string name="admin_description_texthint">Transaction Description</string>
+    <string name="admin_date_texthint">2016-12-31</string>
+
+    <string name="no_products">Currently there are no Product items maintained</string>
+    <string name="menu_delete">Delete Product</string>
+    <string name="product_edit_upc">Upc</string>
+	<string name="product_edit_name">Name</string>
+	<string name="product_edit_description">Description</string>
+	<string name="product_edit_confirm">Confirm</string>
+
+    <!-- used in notes edit fragment -->
+    <string name="save_note">Save</string>
+    <string name="cancel_note">Cancel</string>
+
+</resources>
