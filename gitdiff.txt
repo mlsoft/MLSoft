@@ -1,0 +1,1347 @@
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index d5c0811..252c7b5 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -50,7 +50,7 @@
+         </activity>
+ 
+         <activity
+-            android:name=".test.TrycorderActivity"
++            android:name=".trycorder.TrycorderActivity"
+             android:label="Trycorder"
+             android:parentActivityName=".MainActivity">
+             <meta-data
+diff --git a/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/MainActivity.java b/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/MainActivity.java
+index a315ac4..b8ab8ab 100644
+--- a/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/MainActivity.java
++++ b/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/MainActivity.java
+@@ -31,8 +31,8 @@ import net.ddns.mlsoftlaberge.mlsoft.contacts.ContactsListFragment;
+ import net.ddns.mlsoftlaberge.mlsoft.contacts.ContactAdminFragment;
+ import net.ddns.mlsoftlaberge.mlsoft.contacts.ContactsBudgetFragment;
+ import net.ddns.mlsoftlaberge.mlsoft.test.IronActivity;
+-import net.ddns.mlsoftlaberge.mlsoft.test.TrycorderActivity;
+-import net.ddns.mlsoftlaberge.mlsoft.test.TrycorderFragment;
++import net.ddns.mlsoftlaberge.mlsoft.trycorder.TrycorderActivity;
++import net.ddns.mlsoftlaberge.mlsoft.trycorder.TrycorderFragment;
+ 
+ import net.ddns.mlsoftlaberge.mlsoft.settings.SettingsActivity;
+ 
+diff --git a/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/test/TrycorderActivity.java b/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/test/TrycorderActivity.java
+deleted file mode 100644
+index d409458..0000000
+--- a/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/test/TrycorderActivity.java
++++ /dev/null
+@@ -1,23 +0,0 @@
+-package net.ddns.mlsoftlaberge.mlsoft.test;
+-
+-import android.os.Bundle;
+-import android.support.v4.app.FragmentActivity;
+-import android.support.v4.app.FragmentTransaction;
+-
+-/**
+- * Created by mlsoft on 16-05-13.
+- */
+-public class TrycorderActivity extends FragmentActivity {
+-
+-    private static String TAG="Trycorder";
+-
+-    @Override
+-    protected void onCreate(Bundle savedInstanceState) {
+-        super.onCreate(savedInstanceState);
+-        // start the fragment full screen
+-        final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+-        ft.add(android.R.id.content, new TrycorderFragment(), TAG);
+-        ft.commit();
+-    }
+-
+-}
+diff --git a/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/test/TrycorderFragment.java b/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/test/TrycorderFragment.java
+deleted file mode 100644
+index 2f0a85d..0000000
+--- a/app/src/main/java/net/ddns/mlsoftlaberge/mlsoft/test/TrycorderFragment.java
++++ /dev/null
+@@ -1,532 +0,0 @@
+-package net.ddns.mlsoftlaberge.mlsoft.test;
+-
+-import android.content.Context;
+-import android.content.Intent;
+-import android.content.SharedPreferences;
+-import android.graphics.Bitmap;
+-import android.graphics.Canvas;
+-import android.graphics.Color;
+-import android.graphics.Paint;
+-import android.graphics.SurfaceTexture;
+-import android.hardware.Camera;
+-import android.hardware.Sensor;
+-import android.hardware.SensorEvent;
+-import android.hardware.SensorEventListener;
+-import android.hardware.SensorManager;
+-import android.media.AudioManager;
+-import android.media.MediaPlayer;
+-import android.preference.PreferenceManager;
+-import android.speech.RecognitionListener;
+-import android.speech.RecognizerIntent;
+-import android.speech.SpeechRecognizer;
+-import android.speech.tts.TextToSpeech;
+-import android.support.v4.app.Fragment;
+-import android.os.Bundle;
+-import android.view.LayoutInflater;
+-import android.view.TextureView;
+-import android.view.View;
+-import android.view.ViewGroup;
+-import android.widget.Button;
+-import android.widget.LinearLayout;
+-import android.widget.TextView;
+-
+-import net.ddns.mlsoftlaberge.mlsoft.R;
+-
+-import java.io.IOException;
+-import java.util.ArrayList;
+-import java.util.Locale;
+-
+-/**
+- * A placeholder fragment containing a simple view.
+- */
+-public class TrycorderFragment extends Fragment
+-        implements TextureView.SurfaceTextureListener,
+-        RecognitionListener {
+-
+-    public TrycorderFragment() {
+-    }
+-
+-    // handles to camera and textureview
+-    private Camera mCamera;
+-    private TextureView mTextureView;
+-
+-    // handles for the conversation functions
+-    private TextToSpeech tts;
+-    private AudioManager mAudioManager;
+-    private SpeechRecognizer mSpeechRecognizer;
+-    private Intent mSpeechRecognizerIntent;
+-    private String mSentence;
+-
+-    // the handle to the sensors
+-    private SensorManager mSensorManager;
+-
+-    // the new scope class
+-    private SensorView mSensorView;
+-
+-    // the button to talk to computer
+-    private Button mTalkButton;
+-
+-    // the button to start it all
+-    private Button mStartButton;
+-
+-    // the button to stop it all
+-    private Button mStopButton;
+-    private boolean mRunStatus=false;
+-
+-    // the button to open a channel
+-    private Button mCommButton;
+-
+-    // the button to fire at ennemys
+-    private Button mShieldButton;
+-
+-    // the button to fire at ennemys
+-    private Button mPhaserButton;
+-
+-    // the button to fire at ennemys
+-    private Button mTorpedoButton;
+-
+-    // the button to control sound-effects
+-    private Button mSoundButton;
+-    private boolean mSoundStatus=false;
+-
+-    // the layout to put sensorview in
+-    private LinearLayout mSensorLayout;
+-    private LinearLayout mSensor2Layout;
+-    private LinearLayout mSensor3Layout;
+-
+-    // the player for sound background
+-    private MediaPlayer mMediaPlayer=null;
+-
+-    // the preferences values
+-    boolean autoListen;
+-    String speakLanguage;
+-    String listenLanguage;
+-    String displayLanguage;
+-
+-    @Override
+-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+-        View view = inflater.inflate(R.layout.trycorder_fragment, container, false);
+-
+-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+-        autoListen = sharedPref.getBoolean("pref_key_auto_listen",false);
+-        speakLanguage = sharedPref.getString("pref_key_speak_language", "");
+-        listenLanguage = sharedPref.getString("pref_key_listen_language", "");
+-        displayLanguage = sharedPref.getString("pref_key_display_language", "");
+-
+-        // the start button
+-        mTalkButton = (Button) view.findViewById(R.id.talk_button);
+-        mTalkButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                listenandtalk();
+-            }
+-        });
+-
+-        // the start button
+-        mStartButton = (Button) view.findViewById(R.id.start_button);
+-        mStartButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                startsensors();
+-            }
+-        });
+-
+-        // the stop button
+-        mStopButton = (Button) view.findViewById(R.id.stop_button);
+-        mStopButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                stopsensors();
+-            }
+-        });
+-
+-        // the comm button
+-        mCommButton = (Button) view.findViewById(R.id.comm_button);
+-        mCommButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                opencomm();
+-            }
+-        });
+-
+-        // the shield button
+-        mShieldButton = (Button) view.findViewById(R.id.shield_button);
+-        mShieldButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                firemissiles();
+-            }
+-        });
+-
+-        // the phaser button
+-        mPhaserButton = (Button) view.findViewById(R.id.phaser_button);
+-        mPhaserButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                firemissiles();
+-            }
+-        });
+-
+-        // the torpedo button
+-        mTorpedoButton = (Button) view.findViewById(R.id.torpedo_button);
+-        mTorpedoButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                firemissiles();
+-            }
+-        });
+-
+-        // the sound-effect button
+-        mSoundButton = (Button) view.findViewById(R.id.sound_button);
+-        mSoundButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                switchsound();
+-            }
+-        });
+-
+-        // the sensor layout, to contain my sensorview
+-        mSensorLayout = (LinearLayout) view.findViewById(R.id.sensor_layout);
+-
+-        // the sensor layout, to contain my sensorview
+-        mSensor2Layout = (LinearLayout) view.findViewById(R.id.sensor2_layout);
+-
+-        // the sensor layout, to contain my sensorview
+-        mSensor3Layout = (LinearLayout) view.findViewById(R.id.sensor3_layout);
+-
+-        // create layout params for the created views
+-        final LinearLayout.LayoutParams tlayoutParams =
+-                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+-                        ViewGroup.LayoutParams.MATCH_PARENT);
+-
+-        // ============== create a sensor display and incorporate in layout ==============
+-        // a sensor manager to obtain sensors data
+-        mSensorManager = (SensorManager) getActivity().getSystemService(getActivity().SENSOR_SERVICE);
+-
+-        // my sensorview that display the sensors data
+-        mSensorView = new SensorView(getContext());
+-
+-        // add my sensorview to the layout 1
+-        mSensorLayout.addView(mSensorView,tlayoutParams);
+-
+-        // ============== create a camera display and incorporate in layout ==============
+-
+-        // create and activate a textureview to contain camera display
+-        mTextureView = new TextureView(getContext());
+-        mTextureView.setSurfaceTextureListener(this);
+-
+-        // add the textureview to the layout 3
+-        mSensor3Layout.addView(mTextureView,tlayoutParams);
+-
+-        // ============== initialize the audio listener and talker ==============
+-
+-        tts = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+-            @Override
+-            public void onInit(int status) {
+-                if (status != TextToSpeech.ERROR) {
+-                    tts.setLanguage(Locale.FRENCH);
+-                }
+-            }
+-        });
+-
+-        mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+-
+-        mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(getContext());
+-        mSpeechRecognizer.setRecognitionListener(this);
+-        mSpeechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, "net.ddns.mlsoftlaberge.mlsoft");
+-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5);
+-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE,false);
+-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,5000);
+-        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS,500);
+-        //mAudioManager.setStreamSolo(AudioManager.STREAM_VOICE_CALL, false);
+-
+-        return view;
+-    }
+-
+-    @Override
+-    public void onResume() {
+-        super.onResume();
+-        startsensors();
+-    }
+-
+-    @Override
+-    public void onPause() {
+-        stopsensors();
+-        super.onPause();
+-    }
+-
+-    private void listenandtalk() {
+-        listen();
+-    }
+-
+-    private void opencomm() {
+-        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity().getBaseContext(), R.raw.beep);
+-        mediaPlayer.start(); // no need to call prepare(); create() does that for you
+-    }
+-
+-    private void firemissiles() {
+-        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity().getBaseContext(), R.raw.boop_beep);
+-        mediaPlayer.start(); // no need to call prepare(); create() does that for you
+-    }
+-
+-    private void startmusic() {
+-        if(mMediaPlayer==null) {
+-            mMediaPlayer = MediaPlayer.create(getActivity().getBaseContext(), R.raw.scan_low);
+-            mMediaPlayer.setLooping(true);
+-
+-            mMediaPlayer.start(); // no need to call prepare(); create() does that for you
+-        }
+-    }
+-
+-    private void stopmusic() {
+-        if(mMediaPlayer!=null) {
+-            mMediaPlayer.release();
+-            mMediaPlayer = null;
+-        }
+-    }
+-
+-    private void switchsound() {
+-        if(mSoundStatus) {
+-            mSoundStatus=false;
+-            stopmusic();
+-            mSoundButton.setBackgroundColor(Color.GRAY);
+-        } else {
+-            mSoundStatus=true;
+-            if(mRunStatus) startmusic();
+-            mSoundButton.setBackgroundColor(Color.GREEN);
+-        }
+-    }
+-
+-    private void stopsensors() {
+-        stopmusic();
+-        mSensorManager.unregisterListener(mSensorView);
+-        mRunStatus=false;
+-    }
+-
+-    // here we start the sensor reading
+-    private void startsensors() {
+-        mRunStatus=true;
+-        // link a sensor to the sensorview
+-        mSensorView.resetcount();
+-        mSensorManager.registerListener(mSensorView,
+-                mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+-                SensorManager.SENSOR_DELAY_FASTEST);
+-        if(mSoundStatus) startmusic();
+-    }
+-
+-    // ============================================================================
+-    // class defining the sensor display widget
+-    private class SensorView extends TextView implements SensorEventListener {
+-
+-        private Bitmap mBitmap;
+-        private Paint mPaint = new Paint();
+-        private Canvas mCanvas = new Canvas();
+-        private int mColor[]=new int[3];
+-        private float mWidth;
+-        private float mHeight;
+-        private float mYOffset;
+-        private float mScale;
+-        private float mSpeed=0.5f;
+-
+-        // table of values for the trace
+-        private int MAXVALUES = 300;
+-        private float mValues[] = new float[MAXVALUES * 3];
+-        private int nbValues=0;
+-
+-
+-
+-        // initialize the 3 colors, and setup painter
+-        public SensorView(Context context) {
+-            super(context);
+-            mColor[0] = Color.argb(192, 255, 64, 64);
+-            mColor[1] = Color.argb(192, 64, 64, 255);
+-            mColor[2] = Color.argb(192, 64, 255, 64);
+-            mPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+-            for(int i=0; i<(MAXVALUES * 3); ++i) {
+-                mValues[i]=0.0f;
+-            }
+-            nbValues=0;
+-        }
+-
+-        public void resetcount() {
+-            nbValues=0;
+-        }
+-        // initialize the bitmap to the size of the view, fill it white
+-        // init the view state variables to initial values
+-        @Override
+-        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+-            mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
+-            mCanvas.setBitmap(mBitmap);
+-            mCanvas.drawColor(Color.BLACK);
+-            mYOffset = h * 0.5f;
+-            mScale = -(h * 0.5f * (1.0f / (SensorManager.MAGNETIC_FIELD_EARTH_MAX)));
+-            mWidth = w;
+-            mHeight = h;
+-            mSpeed = mWidth/MAXVALUES;
+-            super.onSizeChanged(w, h, oldw, oldh);
+-        }
+-
+-        // draw
+-        @Override
+-        public void onDraw(Canvas viewcanvas) {
+-            synchronized (this) {
+-                if(mBitmap!=null) {
+-                    // clear the surface
+-                    mCanvas.drawColor(Color.BLACK);
+-                    // draw middle line horizontal
+-                    mPaint.setColor(0xffaaaaaa);
+-                    mPaint.setStrokeWidth(1.0f);
+-                    mCanvas.drawLine(0, mYOffset, mWidth, mYOffset, mPaint);
+-                    // draw the 100 values x 3 rows
+-                    for(int i=0; i<nbValues-1;++i) {
+-                        for(int j=0; j<3;++j) {
+-                            int k=(j*MAXVALUES)+i;
+-                            float oldx=i*mSpeed;
+-                            float newx=(i+1)*mSpeed;
+-                            mPaint.setColor(mColor[j]);
+-                            mPaint.setStrokeWidth(3.0f);
+-                            mCanvas.drawLine(oldx, mValues[k], newx, mValues[k+1], mPaint);
+-                        }
+-                    }
+-                    // transfer the bitmap to the view
+-                    viewcanvas.drawBitmap(mBitmap,0,0,null);
+-                }
+-            }
+-            super.onDraw(viewcanvas);
+-        }
+-
+-        // extract sensor data and plot them on view
+-        public void onSensorChanged(SensorEvent event) {
+-            synchronized (this) {
+-                if (mBitmap != null) {
+-                    if(event.sensor.getType()== Sensor.TYPE_MAGNETIC_FIELD) {
+-                        // scroll left when full
+-                        if(nbValues>=MAXVALUES) {
+-                            for (int i = 0; i < (MAXVALUES * 3)-1; ++i) {
+-                                mValues[i] = mValues[i+1];
+-                            }
+-                            nbValues--;
+-                        }
+-                        // fill the 3 elements in the table
+-                        for(int i=0; i<3; ++i) {
+-                            final float v = mYOffset +event.values[i] * mScale;
+-                            mValues[nbValues+(i*MAXVALUES)]=v;
+-                        }
+-                        nbValues++;
+-                        invalidate();
+-                    }
+-                }
+-            }
+-        }
+-
+-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+-            // nothing to do
+-        }
+-
+-    }
+-
+-    // ========================================================================================
+-    // functions to listen to the surface texture view
+-
+-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+-        mCamera = Camera.open();
+-
+-        try {
+-            mCamera.setPreviewTexture(surface);
+-            mCamera.setDisplayOrientation(90);
+-            mCamera.startPreview();
+-        } catch (IOException ioe) {
+-            // Something bad happened
+-        }
+-    }
+-
+-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+-        // Ignored, Camera does all the work for us
+-    }
+-
+-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+-        mCamera.stopPreview();
+-        mCamera.release();
+-        return true;
+-    }
+-
+-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+-        // Invoked every time there's a new Camera preview frame
+-    }
+-
+-    // ========================================================================================
+-    // functions to listen to the voice recognition callbacks
+-
+-    // =================================================================================
+-    // listener for the speech recognition service
+-
+-
+-    @Override
+-    public void onBeginningOfSpeech() {
+-    }
+-
+-    @Override
+-    public void onBufferReceived(byte[] buffer) {
+-    }
+-
+-    @Override
+-    public void onEndOfSpeech() {
+-    }
+-
+-    @Override
+-    public void onError(int error) {
+-    }
+-
+-    @Override
+-    public void onEvent(int eventType, Bundle params) {
+-    }
+-
+-    @Override
+-    public void onPartialResults(Bundle partialResults) {
+-    }
+-
+-    @Override
+-    public void onReadyForSpeech(Bundle params) {
+-    }
+-
+-    @Override
+-    public void onResults(Bundle results) {
+-        ArrayList<String> dutexte = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+-        if (dutexte != null && dutexte.size() > 0) {
+-            mSentence = dutexte.get(0);
+-            speak(mSentence);
+-        }
+-    }
+-
+-    @Override
+-    public void onRmsChanged(float rmsdB) {
+-    }
+-
+-    // ========================================================================================
+-    // functions to control the speech process
+-
+-    private void listen() {
+-        if(listenLanguage.equals("FR")) {
+-            mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fr-FR");
+-        } else if(listenLanguage.equals("EN")) {
+-            mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
+-        } else {
+-            // automatic
+-        }
+-        mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+-    }
+-
+-    private void speak(String texte) {
+-        if(speakLanguage.equals("FR")) {
+-            tts.setLanguage(Locale.FRENCH);
+-        } else if(speakLanguage.equals("EN")) {
+-            tts.setLanguage(Locale.US);
+-        } else {
+-            // default prechoosen language
+-        }
+-        tts.speak(texte, TextToSpeech.QUEUE_ADD, null);
+-    }
+-}
+diff --git a/app/src/main/res/layout/trycorder_fragment.xml b/app/src/main/res/layout/trycorder_fragment.xml
+index 655b988..0048c37 100644
+--- a/app/src/main/res/layout/trycorder_fragment.xml
++++ b/app/src/main/res/layout/trycorder_fragment.xml
+@@ -11,232 +11,621 @@
+         android:orientation="horizontal"
+         android:weightSum="10">
+ 
+-        <Button
++        <ImageButton
+             android:id="@+id/talk_button"
+             android:layout_width="0dp"
+-            android:layout_height="wrap_content"
+-            android:layout_weight="3"
+-            android:layout_marginStart="4dp"
+-            android:layout_marginTop="4dp"
+-            android:layout_marginEnd="4dp"
+-            android:layout_marginBottom="4dp"
+-            android:background="@android:color/holo_purple"
+-            android:minHeight="48dp"
+-            android:text="TALK"/>
++            android:layout_height="80dp"
++            android:layout_marginBottom="@dimen/button_margin"
++            android:layout_marginEnd="@dimen/button_margin"
++            android:layout_marginStart="@dimen/button_margin"
++            android:layout_marginTop="@dimen/button_margin"
++            android:layout_weight="4"
++            android:background="@android:color/black"
++            android:scaleType="fitXY"
++            android:src="@drawable/trek_topleft"
++            android:text="TALK" />
+ 
+         <Button
+             android:id="@+id/start_button"
+             android:layout_width="0dp"
+-            android:layout_height="wrap_content"
+-            android:layout_weight="4"
+-            android:layout_marginStart="4dp"
+-            android:layout_marginTop="4dp"
+-            android:layout_marginEnd="4dp"
+-            android:layout_marginBottom="4dp"
++            android:layout_height="32dp"
++            android:layout_marginBottom="@dimen/button_margin"
++            android:layout_marginEnd="@dimen/button_margin"
++            android:layout_marginStart="@dimen/button_margin"
++            android:layout_marginTop="10dp"
++            android:layout_weight="2"
+             android:background="@android:color/holo_green_dark"
+-            android:minHeight="48dp"
+-            android:text="START"/>
++            android:text="START" />
+ 
+         <Button
+             android:id="@+id/stop_button"
+             android:layout_width="0dp"
+-            android:layout_height="wrap_content"
+-            android:layout_weight="3"
+-            android:layout_marginStart="4dp"
+-            android:layout_marginTop="4dp"
+-            android:layout_marginEnd="4dp"
+-            android:layout_marginBottom="4dp"
++            android:layout_height="32dp"
++            android:layout_marginBottom="@dimen/button_margin"
++            android:layout_marginEnd="@dimen/button_margin"
++            android:layout_marginStart="@dimen/button_margin"
++            android:layout_marginTop="10dp"
++            android:layout_weight="2"
+             android:background="@android:color/holo_red_dark"
+             android:minHeight="48dp"
+-            android:text="STOP"/>
++            android:text="STOP" />
++
++        <Button
++            android:id="@+id/settings_button"
++            android:layout_width="0dp"
++            android:layout_height="32dp"
++            android:layout_marginBottom="@dimen/button_margin"
++            android:layout_marginEnd="@dimen/button_margin"
++            android:layout_marginStart="@dimen/button_margin"
++            android:layout_marginTop="10dp"
++            android:layout_weight="2"
++            android:background="@android:color/holo_blue_bright"
++            android:minHeight="48dp"
++            android:text="SETUP" />
+ 
+     </LinearLayout>
+ 
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+-        android:orientation="horizontal"
+         android:background="@android:color/black"
++        android:orientation="horizontal"
+         android:weightSum="10">
+ 
+         <LinearLayout
+-            android:orientation="vertical"
+             android:layout_width="0dp"
+             android:layout_height="match_parent"
++            android:layout_marginBottom="@dimen/button_margin"
++            android:layout_marginEnd="@dimen/button_margin"
++            android:layout_marginStart="@dimen/button_margin"
++            android:layout_marginTop="@dimen/button_margin"
+             android:layout_weight="2"
+-            android:layout_marginStart="4dp"
+-            android:layout_marginTop="4dp"
+-            android:layout_marginEnd="4dp"
+-            android:layout_marginBottom="4dp"
+-            android:weightSum="10"
+-            android:background="@android:color/black">
++            android:background="@android:color/black"
++            android:orientation="vertical"
++            android:weightSum="12">
+ 
+             <Button
+-                android:id="@+id/magnetic_button"
++                android:id="@+id/sensor_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
++                android:layout_marginBottom="@dimen/button_margin"
++                android:layout_marginEnd="@dimen/button_margin"
++                android:layout_marginStart="@dimen/button_margin"
++                android:layout_marginTop="@dimen/button_margin"
+                 android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+-                android:background="@android:color/holo_green_light"
+-                android:text="MAG"/>
++                android:background="@android:color/holo_orange_light"
++                android:text="SENSORS" />
+ 
+-            <Button
+-                android:id="@+id/orient_button"
++            <TextView
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
+-                android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+-                android:background="@android:color/holo_green_light"
+-                android:text="ORIENT"/>
++                android:layout_weight="0.5" />
+ 
+             <Button
+-                android:id="@+id/grav_button"
++                android:id="@+id/comm_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
++                android:layout_marginBottom="@dimen/button_margin"
++                android:layout_marginEnd="@dimen/button_margin"
++                android:layout_marginStart="@dimen/button_margin"
++                android:layout_marginTop="@dimen/button_margin"
+                 android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+                 android:background="@android:color/holo_green_light"
+-                android:text="GRAV"/>
++                android:text="COMM" />
++
++            <TextView
++                android:layout_width="match_parent"
++                android:layout_height="0dp"
++                android:layout_weight="0.5" />
+ 
+             <Button
+-                android:id="@+id/audio_button"
++                android:id="@+id/shield_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
++                android:layout_marginBottom="@dimen/button_margin"
++                android:layout_marginEnd="@dimen/button_margin"
++                android:layout_marginStart="@dimen/button_margin"
++                android:layout_marginTop="@dimen/button_margin"
+                 android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+-                android:background="@android:color/holo_green_light"
+-                android:text="AUDIO"/>
++                android:background="@android:color/holo_orange_dark"
++                android:text="SHIELD"
++                android:textColor="@android:color/black" />
+ 
+             <TextView
+                 android:layout_width="match_parent"
+-                android:layout_height="wrap_content" />
++                android:layout_height="0dp"
++                android:layout_weight="0.5" />
+ 
+             <Button
+-                android:id="@+id/comm_button"
++                android:id="@+id/fire_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
++                android:layout_marginBottom="@dimen/button_margin"
++                android:layout_marginEnd="@dimen/button_margin"
++                android:layout_marginStart="@dimen/button_margin"
++                android:layout_marginTop="@dimen/button_margin"
+                 android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+-                android:background="@android:color/holo_green_light"
+-                android:text="COMM"/>
++                android:background="@android:color/holo_red_light"
++                android:text="FIRE"
++                android:textColor="@android:color/black" />
+ 
+             <TextView
+                 android:layout_width="match_parent"
+-                android:layout_height="wrap_content" />
++                android:layout_height="0dp"
++                android:layout_weight="0.5" />
+ 
+             <Button
+-                android:id="@+id/shield_button"
++                android:id="@+id/transporter_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
++                android:layout_marginBottom="@dimen/button_margin"
++                android:layout_marginEnd="@dimen/button_margin"
++                android:layout_marginStart="@dimen/button_margin"
++                android:layout_marginTop="@dimen/button_margin"
+                 android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+-                android:background="@android:color/holo_orange_dark"
+-                android:text="SHIELD"/>
++                android:background="@android:color/holo_blue_bright"
++                android:text="TRANSP"
++                android:textColor="@android:color/black" />
+ 
+-            <Button
+-                android:id="@+id/phaser_button"
++            <TextView
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
+-                android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+-                android:background="@android:color/holo_red_light"
+-                android:text="PHASER"/>
++                android:layout_weight="1.5" />
+ 
+             <Button
+-                android:id="@+id/torpedo_button"
++                android:id="@+id/viewer_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
++                android:layout_marginBottom="@dimen/button_margin"
++                android:layout_marginEnd="@dimen/button_margin"
++                android:layout_marginStart="@dimen/button_margin"
++                android:layout_marginTop="@dimen/button_margin"
+                 android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+-                android:background="@android:color/holo_red_light"
+-                android:text="TORPED"/>
++                android:background="@android:color/holo_purple"
++                android:text="VIEWER" />
+ 
+             <TextView
+                 android:layout_width="match_parent"
+-                android:layout_height="wrap_content" />
++                android:layout_height="0dp"
++                android:layout_weight="1.5"
++                android:ellipsize="middle" />
+ 
+             <Button
+                 android:id="@+id/sound_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
++                android:layout_marginBottom="@dimen/button_margin"
++                android:layout_marginEnd="@dimen/button_margin"
++                android:layout_marginStart="@dimen/button_margin"
++                android:layout_marginTop="@dimen/button_margin"
+                 android:layout_weight="1"
+-                android:layout_marginStart="4dp"
+-                android:layout_marginTop="4dp"
+-                android:layout_marginEnd="4dp"
+-                android:layout_marginBottom="4dp"
+                 android:background="@android:color/holo_blue_bright"
+-                android:text="SOUND"/>
++                android:text="SOUND" />
+ 
+ 
+         </LinearLayout>
+ 
+         <LinearLayout
+-            android:orientation="vertical"
+             android:layout_width="0dp"
+             android:layout_height="match_parent"
++            android:layout_marginBottom="@dimen/button_margin"
++            android:layout_marginEnd="@dimen/button_margin"
++            android:layout_marginStart="@dimen/button_margin"
++            android:layout_marginTop="@dimen/button_margin"
+             android:layout_weight="8"
+-            android:layout_marginStart="4dp"
+-            android:layout_marginTop="4dp"
+-            android:layout_marginEnd="4dp"
+-            android:layout_marginBottom="4dp"
+-            android:weightSum="100"
+-            android:background="@android:color/black">
++            android:background="@android:color/black"
++            android:orientation="vertical"
++            android:weightSum="100">
++
++            <!-- ================== layout no 1 ============== -->
+ 
+             <LinearLayout
+-                android:id="@+id/sensor_layout"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
+                 android:layout_weight="33"
+-                android:layout_gravity="center_horizontal"
+                 android:background="@android:color/black"
+                 android:orientation="vertical">
+ 
++                <LinearLayout
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
++                    android:orientation="horizontal"
++                    android:weightSum="100">
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="10"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_topleft" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="4dp"
++                        android:layout_weight="80"
++                        android:paddingLeft="4dp"
++                        android:paddingRight="4dp"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_horizontalline" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="10"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_topright" />
++
++                </LinearLayout>
++
++                <LinearLayout
++                    android:layout_width="match_parent"
++                    android:layout_height="0dp"
++                    android:background="@android:color/black"
++                    android:orientation="horizontal"
++                    android:layout_weight="8"
++                    android:weightSum="100">
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="match_parent"
++                        android:layout_weight="3"
++                        android:paddingBottom="4dp"
++                        android:paddingTop="4dp"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_verticalline" />
++
++                    <LinearLayout
++                        android:id="@+id/sensor_layout"
++                        android:layout_width="0dp"
++                        android:layout_height="match_parent"
++                        android:layout_weight="94"
++                        android:orientation="horizontal">
++                    </LinearLayout>
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="match_parent"
++                        android:layout_weight="3"
++                        android:paddingBottom="4dp"
++                        android:paddingTop="4dp"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_verticalline" />
++
++                </LinearLayout>
++
++                <LinearLayout
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
++                    android:orientation="horizontal"
++                    android:weightSum="100">
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="10"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_bottomleft" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="4dp"
++                        android:layout_gravity="bottom"
++                        android:layout_weight="80"
++                        android:paddingLeft="4dp"
++                        android:paddingRight="4dp"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_horizontalline" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="10"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_bottomright" />
++
++                </LinearLayout>
++
+             </LinearLayout>
+ 
++            <!-- ================== layout no 2 ============== -->
++
+             <LinearLayout
+                 android:id="@+id/sensor2_layout"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
+-                android:layout_weight="33"
+-                android:layout_gravity="center_horizontal"
++                android:layout_weight="17"
+                 android:background="@android:color/black"
+                 android:orientation="vertical">
+ 
++                <!-- ========== button layout for comm ============== -->
++                <LinearLayout
++                    android:id="@+id/sensor2_comm_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="match_parent"
++                    android:background="@android:color/black"
++                    android:orientation="horizontal"
++                    android:gravity="center"
++                    android:weightSum="100"
++                    android:visibility="gone">
++
++                    <Button
++                        android:id="@+id/opencomm_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_green_dark"
++                        android:text="OPEN COMM"/>
++
++                    <Button
++                        android:id="@+id/closecomm_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_red_dark"
++                        android:text="CLOSE COMM"/>
++
++                </LinearLayout>
++
++                <!-- ========== button layout for sensors ============== -->
++                <LinearLayout
++                    android:id="@+id/sensor2_sensor_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="match_parent"
++                    android:background="@android:color/black"
++                    android:orientation="horizontal"
++                    android:gravity="center"
++                    android:weightSum="100"
++                    android:visibility="gone">
++
++                    <Button
++                        android:id="@+id/magnetic_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="25"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_green_light"
++                        android:text="MAG"/>
++
++                    <Button
++                        android:id="@+id/orientation_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="25"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_green_light"
++                        android:text="ORI"/>
++
++                    <Button
++                        android:id="@+id/gravity_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="25"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_green_light"
++                        android:text="GRA"/>
++
++                    <Button
++                        android:id="@+id/audio_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="25"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_green_light"
++                        android:text="AUD"/>
++
++                </LinearLayout>
++
++                <!-- ========== button layout for shield ============== -->
++                <LinearLayout
++                    android:id="@+id/sensor2_shield_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="match_parent"
++                    android:background="@android:color/black"
++                    android:orientation="horizontal"
++                    android:gravity="center"
++                    android:weightSum="100"
++                    android:visibility="gone">
++
++                    <Button
++                        android:id="@+id/shield_up_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_orange_dark"
++                        android:text="SHIELDS UP"/>
++
++                    <Button
++                        android:id="@+id/shield_down_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_orange_dark"
++                        android:text="SHIELDS DOWN"/>
++
++                </LinearLayout>
++
++                <!-- ========== button layout for fire ============== -->
++                <LinearLayout
++                    android:id="@+id/sensor2_fire_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="match_parent"
++                    android:background="@android:color/black"
++                    android:orientation="horizontal"
++                    android:gravity="center"
++                    android:weightSum="100"
++                    android:visibility="gone">
++
++                    <Button
++                        android:id="@+id/phaser_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_red_light"
++                        android:text="PHASER"/>
++
++                    <Button
++                        android:id="@+id/torpedo_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_red_light"
++                        android:text="TORPEDO"/>
++
++                </LinearLayout>
++
++                <!-- ========== button layout for transporter ============== -->
++                <LinearLayout
++                    android:id="@+id/sensor2_transporter_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="match_parent"
++                    android:background="@android:color/black"
++                    android:orientation="horizontal"
++                    android:gravity="center"
++                    android:weightSum="100"
++                    android:visibility="gone">
++
++                    <Button
++                        android:id="@+id/transport_out_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_blue_bright"
++                        android:text="TRANSPORT OUT"/>
++
++                    <Button
++                        android:id="@+id/transport_in_button"
++                        android:layout_width="0dp"
++                        android:layout_height="48dp"
++                        android:layout_weight="50"
++                        android:layout_gravity="center"
++                        android:layout_marginLeft="2dp"
++                        android:layout_marginRight="2dp"
++                        android:background="@android:color/holo_blue_bright"
++                        android:text="TRANSPORT IN"/>
++
++                </LinearLayout>
++
+             </LinearLayout>
+ 
++            <!-- ================== layout no 3 ============== -->
++
+             <LinearLayout
+-                android:id="@+id/sensor3_layout"
+                 android:layout_width="match_parent"
+                 android:layout_height="0dp"
+-                android:layout_weight="34"
+                 android:layout_gravity="center_horizontal"
++                android:layout_weight="50"
+                 android:background="@android:color/black"
+                 android:orientation="vertical">
+ 
++                <LinearLayout
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
++                    android:orientation="horizontal">
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="1"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_topleft" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="4dp"
++                        android:layout_weight="8"
++                        android:paddingLeft="4dp"
++                        android:paddingRight="4dp"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_horizontalline" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="1"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_topright" />
++
++                </LinearLayout>
++
++                <LinearLayout
++                    android:id="@+id/sensor3_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="0dp"
++                    android:layout_marginLeft="16dp"
++                    android:layout_marginRight="16dp"
++                    android:layout_weight="8"
++                    android:orientation="vertical">
++
++                    <ImageView
++                        android:id="@+id/federation_logo"
++                        android:layout_width="match_parent"
++                        android:layout_height="match_parent"
++                        android:src="@drawable/federation_logo"
++                        android:visibility="visible"/>
++
++
++                </LinearLayout>
++
++                <LinearLayout
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
++                    android:orientation="horizontal">
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="1"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_bottomleft" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="4dp"
++                        android:layout_gravity="bottom"
++                        android:layout_weight="8"
++                        android:paddingLeft="4dp"
++                        android:paddingRight="4dp"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_horizontalline" />
++
++                    <ImageView
++                        android:layout_width="0dp"
++                        android:layout_height="8dp"
++                        android:layout_weight="1"
++                        android:scaleType="fitXY"
++                        android:src="@drawable/trek_bottomright" />
++
++                </LinearLayout>
++
+             </LinearLayout>
+ 
+         </LinearLayout>
+diff --git a/app/src/main/res/values/dimens.xml b/app/src/main/res/values/dimens.xml
+index 1631cb2..f5b5330 100644
+--- a/app/src/main/res/values/dimens.xml
++++ b/app/src/main/res/values/dimens.xml
+@@ -9,5 +9,7 @@
+ 
+     <dimen name="padding">16dp</dimen>
+     <dimen name="listview_item_padding">16dp</dimen>
+-    
++
++    <dimen name="button_margin">2dp</dimen>
++
+ </resources>

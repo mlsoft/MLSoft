@@ -31,8 +31,8 @@ import net.ddns.mlsoftlaberge.mlsoft.contacts.ContactsListFragment;
 import net.ddns.mlsoftlaberge.mlsoft.contacts.ContactAdminFragment;
 import net.ddns.mlsoftlaberge.mlsoft.contacts.ContactsBudgetFragment;
 import net.ddns.mlsoftlaberge.mlsoft.test.IronActivity;
-import net.ddns.mlsoftlaberge.mlsoft.test.TrycorderActivity;
-import net.ddns.mlsoftlaberge.mlsoft.test.TrycorderFragment;
+import net.ddns.mlsoftlaberge.mlsoft.trycorder.TrycorderActivity;
+import net.ddns.mlsoftlaberge.mlsoft.trycorder.TrycorderFragment;
 
 import net.ddns.mlsoftlaberge.mlsoft.settings.SettingsActivity;
 
